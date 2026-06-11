@@ -1,4 +1,1 @@
-# app-ads.txt for Human Invaders — host at https://<final-domain>/app-ads.txt
-# TODO before ad serving: replace pub-XXXXXXXXXXXXXXXX with the AdMob publisher id
-# (AdMob console -> Settings -> Account information), then verify in AdMob.
-google.com, pub-XXXXXXXXXXXXXXXX, DIRECT, f08c47fec0942fa0
+google.com, pub-8708142879764244, DIRECT, f08c47fec0942fa0
