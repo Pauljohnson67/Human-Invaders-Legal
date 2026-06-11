@@ -4,24 +4,555 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Human Invaders — Defend Mars from Earth</title>
+<meta name="description" content="Defend Mars from Earth — a retro arcade shooter on real NASA Mars imagery. Coming to the App Store and Google Play.">
+<link rel="icon" type="image/png" href="assets/app-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;800;900&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
-  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-         background: #140a06; color: #f5e8dc; max-width: 720px; margin: 0 auto;
-         padding: 48px 24px; line-height: 1.7; text-align: center; }
-  h1 { color: #ffb84c; letter-spacing: 0.08em; }
-  a { color: #ffb84c; }
-  .tag { color: #c9a890; }
+  :root {
+    --deep: #060309;
+    --space: #0b0606;
+    --rust: #c4552a;
+    --amber: #ffb84c;
+    --cream: #f5e8dc;
+    --cream-dim: #c9a890;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: var(--deep);
+    color: var(--cream);
+    font-family: "Inter", system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .hero {
+    position: relative;
+    min-height: 100svh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    background-image:
+      radial-gradient(rgba(245, 232, 220, 0.4) 1px, transparent 1.5px),
+      radial-gradient(rgba(245, 232, 220, 0.22) 1px, transparent 1.5px);
+    background-size: 340px 260px, 220px 180px;
+    background-position: 40px 30px, 130px 90px;
+  }
+
+  .topbar {
+    position: relative;
+    z-index: 3;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 18px clamp(20px, 4vw, 40px) 15px;
+  }
+  .topbar::after {
+    content: "";
+    position: absolute;
+    left: clamp(20px, 4vw, 40px);
+    right: clamp(20px, 4vw, 40px);
+    bottom: 0;
+    height: 1px;
+    background: linear-gradient(90deg, rgba(255, 184, 76, 0.5), rgba(255, 184, 76, 0.08));
+  }
+  .label {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 10.5px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: rgba(201, 168, 144, 0.78);
+    white-space: nowrap;
+  }
+
+  .hero-copy {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 16px;
+    padding: clamp(30px, 6vh, 60px) 20px 0;
+  }
+  .hud {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 11px;
+    letter-spacing: 0.26em;
+    text-transform: uppercase;
+    color: var(--amber);
+    text-shadow: 0 0 14px rgba(255, 184, 76, 0.45);
+    margin: 0;
+  }
+  .hud::before, .hud::after {
+    content: "";
+    height: 1px;
+    width: clamp(22px, 6vw, 56px);
+  }
+  .hud::before { background: linear-gradient(90deg, rgba(255, 184, 76, 0), rgba(255, 184, 76, 0.6)); }
+  .hud::after { background: linear-gradient(90deg, rgba(255, 184, 76, 0.6), rgba(255, 184, 76, 0)); }
+  .hud .cursor { color: var(--amber); }
+
+  .title {
+    font-family: "Orbitron", sans-serif;
+    font-weight: 900;
+    font-size: clamp(34px, 7vw, 82px);
+    letter-spacing: 0.07em;
+    line-height: 1.06;
+    margin: 0;
+    text-shadow: 0 4px 40px rgba(11, 6, 6, 0.8);
+    text-wrap: balance;
+  }
+  .title em { font-style: normal; color: var(--amber); }
+
+  .tagline {
+    font-family: "Orbitron", sans-serif;
+    font-weight: 500;
+    font-size: clamp(11px, 1.6vw, 15px);
+    letter-spacing: 0.34em;
+    text-transform: uppercase;
+    color: var(--amber);
+    margin: 0;
+    padding-left: 0.34em; /* optically recenter tracked caps */
+  }
+
+  .pitch {
+    color: var(--cream-dim);
+    font-size: clamp(15px, 1.8vw, 17px);
+    line-height: 1.6;
+    max-width: 46ch;
+    margin: 0;
+    text-wrap: pretty;
+  }
+
+  .store {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 13px;
+    margin-top: 8px;
+  }
+  .badges {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 14px;
+  }
+  .badge {
+    width: 158px;
+    height: 50px;
+    border-radius: 10px;
+    border: 1px solid rgba(245, 232, 220, 0.28);
+    background: repeating-linear-gradient(-45deg, rgba(245, 232, 220, 0.05) 0 8px, rgba(245, 232, 220, 0) 8px 16px);
+    display: grid;
+    place-items: center;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 10.5px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: rgba(245, 232, 220, 0.62);
+  }
+
+  .scene {
+    flex: 1 1 auto;
+    position: relative;
+    min-height: 330px;
+    margin-top: 20px;
+  }
+  .scene svg {
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-53%);
+    width: 175%;
+    min-width: 660px;
+    height: auto;
+    aspect-ratio: 1200 / 760;
+    display: block;
+  }
+  @media (min-width: 680px) {
+    .scene svg { width: 125%; transform: translateX(-51%); }
+  }
+  @media (min-width: 1050px) {
+    .scene svg { width: max(100%, 126vh); transform: translateX(-50%); }
+  }
+
+  .hero-foot {
+    position: relative;
+    z-index: 2;
+    margin-top: -100px;
+    padding: 86px clamp(20px, 4vw, 40px) 22px;
+    background: linear-gradient(180deg, rgba(11, 6, 6, 0) 0%, rgba(11, 6, 6, 0.85) 68%);
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 18px 32px;
+  }
+  .links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 24px;
+    font-size: 13.5px;
+  }
+  .links a {
+    color: var(--cream);
+    text-decoration: none;
+    border-bottom: 1px solid rgba(255, 184, 76, 0.45);
+    padding-bottom: 2px;
+  }
+  .links a:hover { color: var(--amber); border-bottom-color: var(--amber); }
+  .credit {
+    font-size: 12px;
+    line-height: 1.7;
+    color: rgba(201, 168, 144, 0.66);
+    margin: 0;
+    max-width: 460px;
+    text-align: right;
+    text-wrap: pretty;
+  }
+  @media (max-width: 679px) {
+    .hero-foot { flex-direction: column; align-items: center; padding-bottom: 28px; }
+    .credit { text-align: center; }
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .beacon, .beacon-core { animation: beaconPulse 2.8s ease-in-out infinite; }
+    .hud .cursor { animation: hudBlink 1.3s steps(1, end) infinite; }
+  }
+  @keyframes beaconPulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.22; }
+  }
+  @keyframes hudBlink {
+    0%, 55% { opacity: 1; }
+    56%, 100% { opacity: 0; }
+  }
 </style>
 </head>
 <body>
-<h1>HUMAN INVADERS</h1>
-<p class="tag">Defend Mars from Earth — a retro arcade shooter on real NASA Mars imagery.</p>
-<p>Coming to the App Store and Google Play.</p>
-<p>
-  <a href="privacy.html">Privacy Policy</a> &middot;
-  <a href="terms.html">Terms of Use</a>
-</p>
-<p class="tag">Support: <a href="mailto:support@humaninvaders.net">support@humaninvaders.net</a><br>
-&copy; 2026 Piedmont Developers. Mars imagery courtesy NASA (public domain; no endorsement implied).</p>
+<main class="hero">
+  <header class="topbar">
+    <span class="label">Piedmont Developers</span>
+    <span class="label">For iOS &amp; Android</span>
+  </header>
+
+  <section class="hero-copy">
+    <p class="hud">Incoming: Earthlings<span class="cursor">&#9612;</span></p>
+    <h1 class="title">HUMAN <em>INVADERS</em></h1>
+    <p class="tagline">Defend Mars from Earth</p>
+    <p class="pitch">A retro arcade shooter on real NASA Mars imagery.</p>
+    <div class="store">
+      <span class="label">Coming to the App Store and Google Play</span>
+      <div class="badges">
+        <span class="badge">App Store badge</span>
+        <span class="badge">Google Play badge</span>
+      </div>
+    </div>
+  </section>
+
+  <div class="scene" aria-hidden="false">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 760" role="img" aria-label="Two grey Martians inspect a crashed human space capsule on the Mars surface">
+  <defs>
+    <linearGradient id="hsSky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#060309"></stop>
+      <stop offset="0.62" stop-color="#150709"></stop>
+      <stop offset="1" stop-color="#2b100c"></stop>
+    </linearGradient>
+    <radialGradient id="hsHorizon" cx="0.62" cy="1" r="0.9">
+      <stop offset="0" stop-color="#ff9d4c" stop-opacity="0.22"></stop>
+      <stop offset="0.5" stop-color="#c4552a" stop-opacity="0.08"></stop>
+      <stop offset="1" stop-color="#c4552a" stop-opacity="0"></stop>
+    </radialGradient>
+    <linearGradient id="hsGround" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#8e4424"></stop>
+      <stop offset="0.25" stop-color="#74331a"></stop>
+      <stop offset="1" stop-color="#451c0e"></stop>
+    </linearGradient>
+    <linearGradient id="hsDune" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#a35330"></stop>
+      <stop offset="1" stop-color="#74331a"></stop>
+    </linearGradient>
+    <linearGradient id="hsHills" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#552413"></stop>
+      <stop offset="1" stop-color="#3a160b"></stop>
+    </linearGradient>
+    <linearGradient id="hsFoil" x1="0" y1="0" x2="1" y2="0.25">
+      <stop offset="0" stop-color="#8a5a12"></stop>
+      <stop offset="0.28" stop-color="#d99c2b"></stop>
+      <stop offset="0.5" stop-color="#f6cd62"></stop>
+      <stop offset="0.66" stop-color="#dda431"></stop>
+      <stop offset="1" stop-color="#7e500e"></stop>
+    </linearGradient>
+    <linearGradient id="hsSilver" x1="0" y1="0" x2="1" y2="0.2">
+      <stop offset="0" stop-color="#7e8893"></stop>
+      <stop offset="0.4" stop-color="#dde3ea"></stop>
+      <stop offset="0.62" stop-color="#b8c1ca"></stop>
+      <stop offset="1" stop-color="#6d7681"></stop>
+    </linearGradient>
+    <linearGradient id="hsShield" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#3a3531"></stop>
+      <stop offset="0.5" stop-color="#6b625a"></stop>
+      <stop offset="1" stop-color="#2e2a27"></stop>
+    </linearGradient>
+    <radialGradient id="hsAlien" cx="0.38" cy="0.3" r="1">
+      <stop offset="0" stop-color="#cdd2da"></stop>
+      <stop offset="0.55" stop-color="#9aa0ab"></stop>
+      <stop offset="1" stop-color="#6f7480"></stop>
+    </radialGradient>
+    <radialGradient id="hsAlienB" cx="0.4" cy="0.28" r="1">
+      <stop offset="0" stop-color="#c2c8d2"></stop>
+      <stop offset="0.55" stop-color="#8f96a2"></stop>
+      <stop offset="1" stop-color="#666b77"></stop>
+    </radialGradient>
+    <radialGradient id="hsEarthGlow" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#7fb8ff" stop-opacity="0.9"></stop>
+      <stop offset="0.35" stop-color="#5d9bef" stop-opacity="0.35"></stop>
+      <stop offset="1" stop-color="#5d9bef" stop-opacity="0"></stop>
+    </radialGradient>
+    <radialGradient id="hsAmberGlow" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#ffb84c" stop-opacity="0.95"></stop>
+      <stop offset="0.4" stop-color="#ffb84c" stop-opacity="0.3"></stop>
+      <stop offset="1" stop-color="#ffb84c" stop-opacity="0"></stop>
+    </radialGradient>
+    <filter id="hsBlur6" x="-60%" y="-60%" width="220%" height="220%">
+      <feGaussianBlur stdDeviation="6"></feGaussianBlur>
+    </filter>
+    <filter id="hsBlur14" x="-80%" y="-80%" width="260%" height="260%">
+      <feGaussianBlur stdDeviation="14"></feGaussianBlur>
+    </filter>
+  </defs>
+
+  
+  <rect width="1200" height="760" fill="url(#hsSky)"></rect>
+  <rect width="1200" height="760" fill="url(#hsHorizon)"></rect>
+
+  
+  <g fill="#f5e8dc">
+    <circle cx="92" cy="74" r="1.6" opacity="0.8"></circle><circle cx="208" cy="148" r="1.1" opacity="0.5"></circle>
+    <circle cx="318" cy="58" r="1.3" opacity="0.65"></circle><circle cx="430" cy="120" r="1" opacity="0.4"></circle>
+    <circle cx="540" cy="44" r="1.7" opacity="0.85"></circle><circle cx="660" cy="96" r="1.1" opacity="0.5"></circle>
+    <circle cx="760" cy="40" r="1.2" opacity="0.6"></circle><circle cx="884" cy="110" r="1.6" opacity="0.75"></circle>
+    <circle cx="990" cy="60" r="1.1" opacity="0.5"></circle><circle cx="1108" cy="128" r="1.4" opacity="0.7"></circle>
+    <circle cx="150" cy="236" r="1" opacity="0.4"></circle><circle cx="290" cy="206" r="1.4" opacity="0.6"></circle>
+    <circle cx="396" cy="262" r="1" opacity="0.35"></circle><circle cx="510" cy="186" r="1.2" opacity="0.55"></circle>
+    <circle cx="626" cy="238" r="1" opacity="0.4"></circle><circle cx="744" cy="180" r="1.5" opacity="0.7"></circle>
+    <circle cx="852" cy="246" r="1" opacity="0.35"></circle><circle cx="958" cy="196" r="1.2" opacity="0.5"></circle>
+    <circle cx="1066" cy="252" r="1" opacity="0.4"></circle><circle cx="58" cy="172" r="1.2" opacity="0.55"></circle>
+    <circle cx="1156" cy="42" r="1" opacity="0.45"></circle><circle cx="700" cy="300" r="1" opacity="0.3"></circle>
+    <circle cx="240" cy="320" r="1.1" opacity="0.35"></circle><circle cx="1010" cy="318" r="1.1" opacity="0.35"></circle>
+    <circle cx="476" cy="330" r="1" opacity="0.3"></circle><circle cx="586" cy="132" r="1" opacity="0.45"></circle>
+    <circle cx="362" cy="158" r="1" opacity="0.4"></circle><circle cx="816" cy="64" r="1" opacity="0.45"></circle>
+    <circle cx="1130" cy="216" r="1" opacity="0.4"></circle><circle cx="32" cy="64" r="1.1" opacity="0.5"></circle>
+  </g>
+
+  
+  <circle cx="276" cy="112" r="26" fill="url(#hsEarthGlow)"></circle>
+  <circle cx="276" cy="112" r="5" fill="#6ea8f5"></circle>
+  <circle cx="274.4" cy="110.6" r="2.2" fill="#a8cdff" opacity="0.85"></circle>
+  <circle cx="290" cy="104" r="1.4" fill="#cfd6dd" opacity="0.8"></circle>
+
+  
+  <path d="M0 560 L0 522 Q120 492 260 514 Q400 534 520 506 Q660 476 800 508 Q960 540 1080 512 Q1150 498 1200 508 L1200 560 Z" fill="url(#hsHills)"></path>
+  <path d="M0 560 L0 540 Q180 514 340 532 Q520 552 700 530 Q900 506 1060 534 Q1140 546 1200 538 L1200 560 Z" fill="#48200f"></path>
+
+  
+  <rect x="0" y="548" width="1200" height="212" fill="url(#hsGround)"></rect>
+  <path d="M0 560 Q200 546 430 556 Q700 568 920 552 Q1080 542 1200 554 L1200 580 L0 580 Z" fill="url(#hsDune)" opacity="0.7"></path>
+  <path d="M0 660 Q260 642 520 656 Q820 672 1200 650 L1200 760 L0 760 Z" fill="#3c180b" opacity="0.85"></path>
+  
+  <path d="M70 612 Q230 600 380 610" stroke="#b56038" stroke-width="2" fill="none" opacity="0.35" stroke-linecap="round"></path>
+  <path d="M620 700 Q800 688 980 698" stroke="#a35330" stroke-width="2.4" fill="none" opacity="0.3" stroke-linecap="round"></path>
+  <path d="M160 728 Q300 718 430 726" stroke="#a35330" stroke-width="2" fill="none" opacity="0.22" stroke-linecap="round"></path>
+
+  
+  <g>
+    <path d="M120 654 q10 -16 28 -12 q16 4 14 18 q-2 10 -22 10 q-20 0 -20 -16" fill="#56250f"></path>
+    <path d="M126 648 q8 -8 20 -6 l-4 8 z" fill="#8a4226" opacity="0.8"></path>
+    <path d="M1048 622 q8 -12 22 -9 q13 3 11 14 q-2 8 -18 8 q-16 0 -15 -13" fill="#522310"></path>
+    <path d="M560 736 q7 -10 18 -7 q10 2 9 11 q-1 7 -15 7 q-13 0 -12 -11" fill="#502110"></path>
+    <ellipse cx="220" cy="700" rx="9" ry="4" fill="#562a14"></ellipse>
+    <ellipse cx="930" cy="744" rx="11" ry="4.4" fill="#562a14"></ellipse>
+    <ellipse cx="396" cy="668" rx="6" ry="3" fill="#5c2d16"></ellipse>
+  </g>
+
+  
+  <path d="M520 596 Q650 600 760 614 L820 636 Q700 630 560 612 Z" fill="#2f130a" opacity="0.55"></path>
+  <path d="M540 598 Q660 604 780 622" stroke="#241007" stroke-width="5" fill="none" opacity="0.5" stroke-linecap="round"></path>
+
+  
+  <g filter="url(#hsBlur14)">
+    <path d="M880 470 q-26 -36 -2 -62 q22 -24 6 -52 q-12 -24 8 -44" stroke="#b9aa9d" stroke-width="26" fill="none" opacity="0.16" stroke-linecap="round"></path>
+    <path d="M912 480 q-18 -30 2 -54 q18 -22 6 -46" stroke="#cfc2b5" stroke-width="16" fill="none" opacity="0.2" stroke-linecap="round"></path>
+  </g>
+  <g filter="url(#hsBlur6)">
+    <path d="M896 486 q-14 -24 2 -42 q14 -18 5 -36" stroke="#e3d8cc" stroke-width="9" fill="none" opacity="0.28" stroke-linecap="round"></path>
+  </g>
+
+  
+  <g transform="translate(872 560) rotate(-34)">
+    
+    <path d="M-66 96 Q0 132 66 96 L58 122 Q0 150 -58 122 Z" fill="url(#hsShield)"></path>
+    
+    <path d="M-78 -10 Q-80 60 -66 96 Q0 132 66 96 Q80 60 78 -10 Q40 -34 0 -34 Q-40 -34 -78 -10 Z" fill="url(#hsFoil)"></path>
+    
+    <g stroke-linecap="round" fill="none">
+      <path d="M-50 -16 Q-54 40 -44 88" stroke="#fbe49a" stroke-width="3.4" opacity="0.5"></path>
+      <path d="M-22 -28 Q-26 40 -18 104" stroke="#ffeeb0" stroke-width="2.6" opacity="0.65"></path>
+      <path d="M6 -30 Q4 44 10 110" stroke="#fbe49a" stroke-width="3" opacity="0.45"></path>
+      <path d="M34 -26 Q32 40 38 100" stroke="#6e4509" stroke-width="2.6" opacity="0.5"></path>
+      <path d="M58 -14 Q58 38 52 90" stroke="#6e4509" stroke-width="3" opacity="0.45"></path>
+      <path d="M-64 6 Q-30 16 8 12 Q44 8 70 14" stroke="#6e4509" stroke-width="2" opacity="0.35"></path>
+      <path d="M-68 48 Q-28 58 14 54 Q50 50 72 56" stroke="#fbe49a" stroke-width="2" opacity="0.35"></path>
+    </g>
+    
+    <path d="M-78 -10 Q-40 -34 0 -34 Q40 -34 78 -10 L60 -78 Q30 -98 0 -98 Q-30 -98 -60 -78 Z" fill="url(#hsSilver)"></path>
+    
+    <path d="M-69 -42 Q0 -68 69 -42" stroke="#5e6770" stroke-width="2.4" fill="none" opacity="0.8"></path>
+    <path d="M-78 -10 Q0 -38 78 -10" stroke="#525b64" stroke-width="2.6" fill="none" opacity="0.7"></path>
+    <g fill="#4b545d">
+      <circle cx="-52" cy="-52" r="2.2"></circle><circle cx="-26" cy="-60" r="2.2"></circle><circle cx="0" cy="-63" r="2.2"></circle>
+      <circle cx="26" cy="-60" r="2.2"></circle><circle cx="52" cy="-52" r="2.2"></circle>
+      <circle cx="-60" cy="-22" r="2.2"></circle><circle cx="0" cy="-32" r="2.2"></circle><circle cx="60" cy="-22" r="2.2"></circle>
+    </g>
+    
+    <circle cx="18" cy="-62" r="11" fill="#1d2126"></circle>
+    <circle cx="18" cy="-62" r="11" fill="none" stroke="#e8edf2" stroke-width="2.6" opacity="0.9"></circle>
+    <circle cx="14.5" cy="-65.5" r="3.4" fill="#3c444d" opacity="0.9"></circle>
+    
+    <path d="M-60 -78 Q0 -112 60 -78 L48 -104 Q0 -126 -48 -104 Z" fill="#3a3531"></path>
+    <rect x="-12" y="-140" width="24" height="26" rx="6" fill="#2b2623"></rect>
+    
+    <circle class="beacon" cx="0" cy="-146" r="18" fill="url(#hsAmberGlow)"></circle>
+    <circle class="beacon-core" cx="0" cy="-146" r="5" fill="#ffb84c"></circle>
+    
+    <path d="M64 30 L118 -8 L150 6" stroke="#26211e" stroke-width="11" fill="none" stroke-linecap="round"></path>
+    <ellipse cx="156" cy="8" rx="14" ry="9" fill="#3a4048" transform="rotate(24 156 8)"></ellipse>
+    
+    <path d="M-66 44 L-104 64" stroke="#26211e" stroke-width="10" stroke-linecap="round"></path>
+    
+    <path d="M-78 -10 Q-80 60 -66 96" stroke="#ffd98a" stroke-width="3.4" fill="none" opacity="0.8" stroke-linecap="round"></path>
+    <path d="M-60 -78 Q-72 -42 -78 -10" stroke="#f3f7fb" stroke-width="3" fill="none" opacity="0.8" stroke-linecap="round"></path>
+  </g>
+
+  
+  <path d="M760 648 Q800 596 868 606 Q952 616 1000 660 Q1030 688 1010 700 Q900 724 800 700 Q744 686 760 648 Z" fill="url(#hsDune)"></path>
+  <path d="M778 644 Q820 606 884 616 Q840 636 812 660 Q790 678 778 644 Z" fill="#b56038" opacity="0.6"></path>
+  <path d="M760 648 Q800 596 868 606 Q830 622 800 656 Q776 682 766 668 Z" fill="#c46a40" opacity="0.35"></path>
+  
+  <ellipse cx="744" cy="664" rx="10" ry="5" fill="#5c2a16"></ellipse>
+  <ellipse cx="1022" cy="688" rx="12" ry="5" fill="#5c2a16"></ellipse>
+  <ellipse cx="980" cy="608" rx="7" ry="3.6" fill="#6b3119"></ellipse>
+
+  
+  <g>
+    
+    <g transform="translate(676 668) rotate(-12)">
+      <rect x="-26" y="-12" width="52" height="24" rx="3" fill="url(#hsSilver)"></rect>
+      <circle cx="-17" cy="-4" r="1.8" fill="#4b545d"></circle><circle cx="17" cy="-4" r="1.8" fill="#4b545d"></circle>
+      <circle cx="0" cy="6" r="1.8" fill="#4b545d"></circle>
+    </g>
+    <ellipse cx="676" cy="684" rx="30" ry="6" fill="#2f130a" opacity="0.5"></ellipse>
+    
+    <path d="M580 700 l20 -14 l14 8 l-10 12 l-16 4 z" fill="url(#hsFoil)"></path>
+    <path d="M586 696 l12 -8" stroke="#ffeeb0" stroke-width="1.6" opacity="0.7"></path>
+    <ellipse cx="592" cy="706" rx="22" ry="4.6" fill="#2f130a" opacity="0.45"></ellipse>
+    
+    <path d="M1052 716 l46 -12" stroke="#26211e" stroke-width="8" stroke-linecap="round"></path>
+    <ellipse cx="1075" cy="716" rx="28" ry="5" fill="#2f130a" opacity="0.45"></ellipse>
+    
+    <circle cx="730" cy="708" r="3.4" fill="#9aa4af"></circle>
+    <path d="M508 668 q4 -6 8 0 q4 6 8 0" stroke="#9aa4af" stroke-width="2.4" fill="none" stroke-linecap="round"></path>
+  </g>
+
+  
+  
+  <g transform="translate(368 480)">
+    <ellipse cx="6" cy="186" rx="52" ry="9" fill="#2f130a" opacity="0.55"></ellipse>
+    
+    <path d="M-10 118 Q-12 152 -14 176" stroke="#7a808b" stroke-width="13" fill="none" stroke-linecap="round" stroke-opacity="0"></path>
+    <path d="M-10 118 Q-12 152 -14 176" stroke="#787e89" stroke-width="13" fill="none" stroke-linecap="round"></path>
+    <path d="M22 118 Q26 152 28 176" stroke="#6f7480" stroke-width="13" fill="none" stroke-linecap="round"></path>
+    <ellipse cx="-16" cy="178" rx="14" ry="6.5" fill="#5f6470"></ellipse>
+    <ellipse cx="30" cy="178" rx="14" ry="6.5" fill="#5f6470"></ellipse>
+    
+    <path d="M-22 52 Q-26 100 -14 124 Q6 136 26 124 Q38 100 34 52 Q6 38 -22 52 Z" fill="url(#hsAlien)"></path>
+    
+    <path d="M-20 66 Q-40 84 -28 106 Q-16 116 -2 112" stroke="#878d98" stroke-width="11" fill="none" stroke-linecap="round"></path>
+    <path d="M32 64 Q48 84 38 104 Q28 114 10 112" stroke="#6f7480" stroke-width="11" fill="none" stroke-linecap="round"></path>
+    
+    <path d="M0 38 Q4 48 6 56 L20 54 Q18 44 18 36 Z" fill="#8b919c"></path>
+    
+    <g transform="rotate(9 10 -8)">
+      <ellipse cx="10" cy="-8" rx="46" ry="40" fill="url(#hsAlien)"></ellipse>
+      
+      <path d="M48 -28 Q60 -8 48 16" stroke="#ffb84c" stroke-width="3.2" fill="none" opacity="0.55" stroke-linecap="round"></path>
+      
+      <g>
+        <ellipse cx="-6" cy="-6" rx="13" ry="17" fill="#16181d" transform="rotate(-10 -6 -6)"></ellipse>
+        <ellipse cx="32" cy="-8" rx="13" ry="17" fill="#16181d" transform="rotate(-8 32 -8)"></ellipse>
+        <circle cx="-1.5" cy="-12" r="3.4" fill="#f5e8dc" opacity="0.92"></circle>
+        <circle cx="36.5" cy="-14" r="3.4" fill="#f5e8dc" opacity="0.92"></circle>
+        <circle cx="-9" cy="0" r="2" fill="#ffb84c" opacity="0.75"></circle>
+        <circle cx="29" cy="-2" r="2" fill="#ffb84c" opacity="0.75"></circle>
+      </g>
+      
+      <ellipse cx="14" cy="22" rx="4.6" ry="3" fill="#4d525c"></ellipse>
+    </g>
+  </g>
+
+  
+  <g transform="translate(478 522)">
+    <ellipse cx="2" cy="146" rx="42" ry="8" fill="#2f130a" opacity="0.55"></ellipse>
+    
+    <path d="M-8 92 Q-10 118 -12 138" stroke="#6c7280" stroke-width="11" fill="none" stroke-linecap="round"></path>
+    <path d="M16 92 Q19 118 21 138" stroke="#62687500" stroke-width="11" fill="none"></path>
+    <path d="M16 92 Q19 118 21 138" stroke="#626875" stroke-width="11" fill="none" stroke-linecap="round"></path>
+    <ellipse cx="-13" cy="140" rx="12" ry="5.6" fill="#555a66"></ellipse>
+    <ellipse cx="23" cy="140" rx="12" ry="5.6" fill="#555a66"></ellipse>
+    
+    <path d="M-18 38 Q-22 78 -10 98 Q4 108 20 98 Q30 78 28 38 Q4 26 -18 38 Z" fill="url(#hsAlienB)"></path>
+    
+    <path d="M-16 48 Q-28 68 -24 88" stroke="#7d838e" stroke-width="9.5" fill="none" stroke-linecap="round"></path>
+    
+    <path d="M26 46 Q48 30 40 4 Q36 -8 26 -14" stroke="#7d838e" stroke-width="9.5" fill="none" stroke-linecap="round"></path>
+    <circle cx="24" cy="-16" r="6" fill="#8b919c"></circle>
+    
+    <path d="M-2 24 Q2 32 3 40 L15 38 Q14 30 14 22 Z" fill="#7d838e"></path>
+    
+    <g transform="rotate(-12 6 -16)">
+      <ellipse cx="6" cy="-16" rx="38" ry="33" fill="url(#hsAlienB)"></ellipse>
+      <path d="M38 -33 Q48 -16 38 4" stroke="#ffb84c" stroke-width="2.8" fill="none" opacity="0.5" stroke-linecap="round"></path>
+      <g>
+        <ellipse cx="-7" cy="-14" rx="11" ry="14.5" fill="#16181d" transform="rotate(-10 -7 -14)"></ellipse>
+        <ellipse cx="25" cy="-16" rx="11" ry="14.5" fill="#16181d" transform="rotate(-8 25 -16)"></ellipse>
+        <circle cx="-3" cy="-19" r="2.8" fill="#f5e8dc" opacity="0.92"></circle>
+        <circle cx="29" cy="-21" r="2.8" fill="#f5e8dc" opacity="0.92"></circle>
+        <circle cx="-9.5" cy="-9" r="1.7" fill="#ffb84c" opacity="0.75"></circle>
+        <circle cx="22.5" cy="-11" r="1.7" fill="#ffb84c" opacity="0.75"></circle>
+      </g>
+      <ellipse cx="10" cy="9" rx="3.8" ry="2.6" fill="#454a54"></ellipse>
+    </g>
+  </g>
+
+  
+  <ellipse cx="858" cy="430" rx="180" ry="120" fill="url(#hsAmberGlow)" opacity="0.18"></ellipse>
+</svg>
+  </div>
+
+  <footer class="hero-foot">
+    <nav class="links">
+      <a href="privacy.html">Privacy Policy</a>
+      <a href="terms.html">Terms of Use</a>
+      <a href="support.html">Support</a>
+    </nav>
+    <p class="credit">&copy; 2026 Piedmont Developers. Mars imagery courtesy NASA (public domain; no endorsement implied).</p>
+  </footer>
+</main>
 </body>
 </html>

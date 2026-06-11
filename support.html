@@ -4,31 +4,149 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Support — Human Invaders</title>
+<link rel="icon" type="image/png" href="assets/app-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;800;900&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
-  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-         background: #140a06; color: #f5e8dc; max-width: 720px; margin: 0 auto;
-         padding: 48px 24px; line-height: 1.7; text-align: center; }
-  h1 { color: #ffb84c; letter-spacing: 0.08em; }
-  a { color: #ffb84c; }
-  .card { background: #241209; border-radius: 14px; padding: 24px 28px; margin: 28px 0;
-          text-align: left; }
+  :root {
+    --deep: #060309;
+    --space: #0b0606;
+    --amber: #ffb84c;
+    --cream: #f5e8dc;
+    --cream-dim: #c9a890;
+    --body-text: #ddc9b8;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: var(--deep);
+    background-image:
+      radial-gradient(rgba(245, 232, 220, 0.32) 1px, transparent 1.5px),
+      radial-gradient(rgba(245, 232, 220, 0.18) 1px, transparent 1.5px),
+      radial-gradient(120% 60% at 50% 118%, #2b100c 0%, rgba(43, 16, 12, 0) 70%);
+    background-size: 340px 260px, 220px 180px, 100% 100%;
+    background-position: 40px 30px, 130px 90px, 0 0;
+    background-attachment: fixed;
+    color: var(--cream);
+    font-family: "Inter", system-ui, sans-serif;
+    font-size: 16px;
+    line-height: 1.7;
+    -webkit-font-smoothing: antialiased;
+  }
+  .topbar {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 18px clamp(20px, 4vw, 32px) 15px;
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+    position: relative;
+  }
+  .topbar::after {
+    content: "";
+    position: absolute;
+    left: clamp(20px, 4vw, 32px);
+    right: clamp(20px, 4vw, 32px);
+    bottom: 0;
+    height: 1px;
+    background: linear-gradient(90deg, rgba(255, 184, 76, 0.5), rgba(255, 184, 76, 0.08));
+  }
+  .wordmark {
+    font-family: "Orbitron", sans-serif;
+    font-weight: 800;
+    font-size: 14px;
+    letter-spacing: 0.12em;
+    color: var(--cream);
+    text-decoration: none;
+    white-space: nowrap;
+  }
+  .wordmark em { font-style: normal; color: var(--amber); }
+  .label {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 10.5px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: rgba(201, 168, 144, 0.78);
+    white-space: nowrap;
+  }
+  main.card {
+    max-width: 740px;
+    margin: clamp(24px, 5vw, 48px) auto;
+    padding: clamp(28px, 5vw, 56px);
+    background: linear-gradient(180deg, #1d0e08 0%, #150a06 100%);
+    border: 1px solid rgba(255, 184, 76, 0.14);
+    border-radius: 14px;
+    box-shadow: 0 30px 80px rgba(0, 0, 0, 0.55);
+    text-align: center;
+  }
+  @media (max-width: 480px) {
+    main.card { margin-left: 12px; margin-right: 12px; }
+  }
+  h1 {
+    font-family: "Orbitron", sans-serif;
+    font-weight: 900;
+    font-size: clamp(22px, 3.6vw, 32px);
+    letter-spacing: 0.12em;
+    color: var(--cream);
+    margin: 0 0 14px;
+  }
+  p { color: var(--body-text); text-wrap: pretty; }
+  strong { color: var(--cream); font-weight: 600; }
+  a { color: var(--amber); text-decoration-thickness: 1px; text-underline-offset: 3px; }
+  .panel {
+    background: rgba(255, 184, 76, 0.045);
+    border: 1px solid rgba(255, 184, 76, 0.16);
+    border-radius: 12px;
+    padding: 22px 26px;
+    margin: 26px 0;
+    text-align: left;
+  }
+  .panel p { margin: 10px 0; }
+  .pagelinks { margin-top: 30px; font-size: 14.5px; }
+  .pagelinks a {
+    color: var(--cream);
+    text-decoration: none;
+    border-bottom: 1px solid rgba(255, 184, 76, 0.45);
+    padding-bottom: 2px;
+  }
+  .pagelinks a:hover { color: var(--amber); border-bottom-color: var(--amber); }
+  footer {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 4px clamp(20px, 4vw, 32px) 48px;
+    text-align: center;
+  }
+  .credit { font-size: 12px; line-height: 1.7; color: rgba(201, 168, 144, 0.66); margin: 0; }
 </style>
 </head>
 <body>
+<header class="topbar">
+  <a class="wordmark" href="index.html">HUMAN <em>INVADERS</em></a>
+  <span class="label">Piedmont Developers</span>
+</header>
+
+<main class="card">
 <h1>SUPPORT</h1>
 <p>Questions, bug reports, or feedback about Human Invaders — we read everything.</p>
-<div class="card">
+<div class="panel">
   <p><strong>Email:</strong> <a href="mailto:support@humaninvaders.net">support@humaninvaders.net</a></p>
   <p><strong>Helpful to include:</strong> device model, OS version, and what you were
   doing when the issue happened.</p>
 </div>
-<div class="card">
+<div class="panel">
   <p><strong>Purchases:</strong> the Remove Ads purchase is restorable from the in-game
   Remove Ads screen → "Restore Purchase" after any reinstall, on the same App Store /
   Google Play account. Refunds are handled by Apple and Google through their standard
   store processes.</p>
 </div>
-<p><a href="index.html">Home</a> &middot; <a href="privacy.html">Privacy</a> &middot;
+<p class="pagelinks"><a href="index.html">Home</a> &middot; <a href="privacy.html">Privacy</a> &middot;
    <a href="terms.html">Terms</a></p>
+</main>
+
+<footer>
+  <p class="credit">&copy; 2026 Piedmont Developers. Mars imagery courtesy NASA (public domain; no endorsement implied).</p>
+</footer>
 </body>
 </html>
